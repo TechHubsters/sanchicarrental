@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { HashRouter as Router, Route, Routes } from "react-router-dom";
 import React, { useRef } from "react";
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
@@ -21,7 +21,7 @@ function App() {
     <div className="relative flex flex-col min-h-screen bg-white overflow-hidden">
       <div className="hidden md:block absolute top-0 right-0 w-[30%] h-full bg-[#19746B]"></div>
 
-      <BrowserRouter>
+      <Router>
         <Navbar onScroll={handleScroll} />
         <main className="flex-grow relative z-10">
           <Routes>
@@ -33,7 +33,7 @@ function App() {
         <footer className="bg-white shadow-inner mt-auto relative z-10">
           <Footer />
         </footer>
-      </BrowserRouter>
+      </Router>
     </div>
   );
 }
