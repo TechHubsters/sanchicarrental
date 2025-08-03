@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/sanchicarrental/static/css/main.ffa920dd.css",
-    "main.js": "/sanchicarrental/static/js/main.e62a8dd2.js",
+    "main.js": "/sanchicarrental/static/js/main.6ce1381f.js",
     "static/media/toyota_innova.png": "/sanchicarrental/static/media/toyota_innova.e4c076ece908d73d1af8.png",
     "static/media/Mahalaxmi_Temple,_Kolhapur.jpg": "/sanchicarrental/static/media/Mahalaxmi_Temple,_Kolhapur.0d657d9fb5cae7c31a64.jpg",
     "static/media/ajintha.jpg": "/sanchicarrental/static/media/ajintha.a9ad43f86c12a81e545d.jpg",
@@ -20,10 +20,10 @@
     "static/media/swift.png": "/sanchicarrental/static/media/swift.d2466a5810ff50242711.png",
     "index.html": "/sanchicarrental/index.html",
     "main.ffa920dd.css.map": "/sanchicarrental/static/css/main.ffa920dd.css.map",
-    "main.e62a8dd2.js.map": "/sanchicarrental/static/js/main.e62a8dd2.js.map"
+    "main.6ce1381f.js.map": "/sanchicarrental/static/js/main.6ce1381f.js.map"
   },
   "entrypoints": [
     "static/css/main.ffa920dd.css",
-    "static/js/main.e62a8dd2.js"
+    "static/js/main.6ce1381f.js"
   ]
 }
