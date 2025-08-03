@@ -1,5 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+
+// Error Boundary Component
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("Component error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="text-center p-4">
+          Something went wrong. Please refresh the page.
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const HowItWorks = () => {
   const cities = [
@@ -51,47 +78,110 @@ const HowItWorks = () => {
   const [returnDate, setReturnDate] = useState("");
   const [journeyTime, setJourneyTime] = useState(""); // Added journey time state
 
+  // Global error handling
+  useEffect(() => {
+    const handleError = (error) => {
+      console.warn("Global error caught:", error);
+    };
+
+    const handleUnhandledRejection = (event) => {
+      console.warn("Unhandled promise rejection:", event.reason);
+    };
+
+    window.addEventListener("error", handleError);
+    window.addEventListener("unhandledrejection", handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener("error", handleError);
+      window.removeEventListener(
+        "unhandledrejection",
+        handleUnhandledRejection
+      );
+    };
+  }, []);
+
   const handleSearch = () => {
-    if (!pickup || !drop || !journeyDate || !journeyTime) {
-      alert("Please fill all required fields.");
-      return;
+    try {
+      if (!pickup || !drop || !journeyDate || !journeyTime) {
+        alert("Please fill all required fields.");
+        return;
+      }
+      navigate("/booking", {
+        state: {
+          journeyType,
+          pickup,
+          drop,
+          journeyDate,
+          journeyTime,
+          returnDate: journeyType === "Return" ? returnDate : null,
+        },
+      });
+    } catch (error) {
+      console.error("Navigation error:", error);
+      alert("An error occurred. Please try again.");
     }
-    navigate("/booking", {
-      state: {
-        journeyType,
-        pickup,
-        drop,
-        journeyDate,
-        journeyTime,
-        returnDate: journeyType === "Return" ? returnDate : null,
-      },
-    });
   };
 
   const handleJourneyChange = (type) => {
-    setJourneyType(type);
-    if (type === "Onward") {
-      setDrop(""); // Reset drop location for onward journey
+    try {
+      setJourneyType(type);
+      if (type === "Onward") {
+        setDrop(""); // Reset drop location for onward journey
+      }
+    } catch (error) {
+      console.error("Journey change error:", error);
     }
   };
 
   const handlePickupChange = (city) => {
-    setPickup(city);
-    setShowPickupDropdown(false);
-    if (journeyType === "Onward") {
-      setDrop(""); // Reset drop location when pickup changes for onward journey
+    try {
+      setPickup(city);
+      setShowPickupDropdown(false);
+      if (journeyType === "Onward") {
+        setDrop(""); // Reset drop location when pickup changes for onward journey
+      }
+    } catch (error) {
+      console.error("Pickup change error:", error);
     }
   };
 
   const handleDropChange = (city) => {
-    setDrop(city);
-    setShowDropDropdown(false);
+    try {
+      setDrop(city);
+      setShowDropDropdown(false);
+    } catch (error) {
+      console.error("Drop change error:", error);
+    }
   };
 
   const filteredCitiesForDrop =
     journeyType === "Onward"
       ? cities.filter((city) => city !== pickup)
       : cities;
+
+  // Safe event handler wrapper
+  const safeEventHandler = (handler) => {
+    return (e) => {
+      try {
+        if (e && e.target && e.target.value !== undefined) {
+          handler(e.target.value);
+        }
+      } catch (error) {
+        console.warn("Event handler error:", error);
+      }
+    };
+  };
+
+  // Safe click handler wrapper
+  const safeClickHandler = (handler) => {
+    return () => {
+      try {
+        handler();
+      } catch (error) {
+        console.warn("Click handler error:", error);
+      }
+    };
+  };
 
   return (
     <div className="bg-white py-3 px-5">
@@ -150,7 +240,9 @@ const HowItWorks = () => {
           <label className="block text-lg font-semibold mb-2">From City</label>
           <div
             className="px-4 py-2 border rounded-md cursor-pointer flex items-center justify-between"
-            onClick={() => setShowPickupDropdown((prev) => !prev)}
+            onClick={safeClickHandler(() =>
+              setShowPickupDropdown((prev) => !prev)
+            )}
           >
             {pickup || "Select Pickup Location"}
             <span className="ml-2" style={{ color: "#FE9A03FC" }}>
@@ -164,7 +256,7 @@ const HowItWorks = () => {
                 type="text"
                 placeholder="Search City"
                 value={pickupSearch}
-                onChange={(e) => setPickupSearch(e.target.value)}
+                onChange={safeEventHandler(setPickupSearch)}
                 className="w-full px-4 py-2 border-b"
               />
               <ul>
@@ -176,7 +268,7 @@ const HowItWorks = () => {
                     <li
                       key={index}
                       className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                      onClick={() => handlePickupChange(city)}
+                      onClick={safeClickHandler(() => handlePickupChange(city))}
                     >
                       {city}
                     </li>
@@ -191,7 +283,9 @@ const HowItWorks = () => {
           <label className="block text-lg font-semibold mb-2">To City</label>
           <div
             className="px-4 py-2 border rounded-md cursor-pointer flex items-center justify-between"
-            onClick={() => setShowDropDropdown((prev) => !prev)}
+            onClick={safeClickHandler(() =>
+              setShowDropDropdown((prev) => !prev)
+            )}
           >
             {drop || "Select Drop Location"}
             <span className="ml-2" style={{ color: "#FE9A03FC" }}>
@@ -205,7 +299,7 @@ const HowItWorks = () => {
                 type="text"
                 placeholder="Search City"
                 value={dropSearch}
-                onChange={(e) => setDropSearch(e.target.value)}
+                onChange={safeEventHandler(setDropSearch)}
                 className="w-full px-4 py-2 border-b"
               />
               <ul>
@@ -217,7 +311,7 @@ const HowItWorks = () => {
                     <li
                       key={index}
                       className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                      onClick={() => handleDropChange(city)}
+                      onClick={safeClickHandler(() => handleDropChange(city))}
                     >
                       {city}
                     </li>
@@ -237,7 +331,7 @@ const HowItWorks = () => {
               type="date"
               className="w-full px-4 py-2 border rounded-md appearance-none"
               value={journeyDate}
-              onChange={(e) => setJourneyDate(e.target.value)}
+              onChange={safeEventHandler(setJourneyDate)}
             />
             {!journeyDate && (
               <span className="absolute left-4 top-2 text-gray-500 pointer-events-none">
@@ -255,10 +349,9 @@ const HowItWorks = () => {
           <div className="relative">
             <input
               type="time"
-
               className="w-full px-4 py-2 border rounded-md appearance-none"
               value={journeyTime}
-              onChange={(e) => setJourneyTime(e.target.value)}
+              onChange={safeEventHandler(setJourneyTime)}
             />
             {!journeyTime && (
               <span className="absolute left-4 top-2 text-gray-500 pointer-events-none">
@@ -277,7 +370,7 @@ const HowItWorks = () => {
               type="date"
               className="w-full px-4 py-2 border rounded-md"
               value={returnDate}
-              onChange={(e) => setReturnDate(e.target.value)}
+              onChange={safeEventHandler(setReturnDate)}
             />
           </div>
         )}
@@ -287,7 +380,7 @@ const HowItWorks = () => {
       <div className="flex justify-center mt-8">
         <button
           className="px-6 py-2 font-sans text-base text-black rounded-md shadow-md bg-gray-200 hover:bg-button hover:text-white"
-          onClick={handleSearch}
+          onClick={safeClickHandler(handleSearch)}
         >
           Search
         </button>
@@ -296,4 +389,10 @@ const HowItWorks = () => {
   );
 };
 
-export default HowItWorks;
+const HowItWorksWithErrorBoundary = () => (
+  <ErrorBoundary>
+    <HowItWorks />
+  </ErrorBoundary>
+);
+
+export default HowItWorksWithErrorBoundary;
